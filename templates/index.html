@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create table dynamically</title>
+</head>
+<body>
+    <center>
+        <h1>How to create a table dynamically in django.</h1>
+        <hr/>
+    </center>
+    <form method="POST", enctype="multipart/form-data">
+        <center>
+            {% csrf_token %}
+            <textarea cols="150" rows="3" style="border: solid 2px blue;" name="table_name"></textarea>
+            <br/>
+            <br/>
+            <input type="file"
+                   title="Upload excel file"
+                   name="excel_file"
+                   style="border: 1px solid black; padding: 5px;">
+            <br/>
+            <br/>
+{#            <input type="submit", value="Save" onclick="return alert('Command Submitted')"/>#}
+            <input type="submit", value="Save"/>
+        </center>
+    </form>
+</body>
+</html>
