@@ -9,9 +9,10 @@ from .forms import UploadForm
 from django.db import connection
 import openpyxl
 
-from data_hub_drf.utils.custome_exceptions import InvalidPayload
+from data_hub_drf.utils.custom_exceptions import InvalidPayload
 from data_hub_drf.utils.helper_functions import table_name_worksheet_verifier, data_extractor
 from data_hub_drf.utils.command_generators import model_generator, data_populator
+from data_hub_drf.utils.custom_messages import custom_message
 
 
 class UploadExcel(APIView):
@@ -54,9 +55,15 @@ class UploadExcel(APIView):
 class CursorView(APIView):
 
     def get(self, request):
-        cursor = connection.cursor()
-        cursor.execute("SELECT * FROM data_hub.ijona")
-        tables = cursor.fetchall()
-        cursor.close()
-        return Response(tables)
+        # try:
+        #     cursor = connection.cursor()
+        #     cursor.execute()
+        #     tables = cursor.fetchall()
+        #     cursor.close()
+        #     return Response()
+        # except:
+        message = custom_message(
+            message='Use the post method to get the result according to the request.'
+        )
+        return Response(message)
 

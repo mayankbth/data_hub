@@ -1,5 +1,5 @@
 import openpyxl
-from data_hub_drf.utils.custome_exceptions import InvalidPayload
+from data_hub_drf.utils.custom_exceptions import InvalidPayload
 from data_hub_drf.forms import UploadForm
 from openpyxl.utils.exceptions import InvalidFileException
 
