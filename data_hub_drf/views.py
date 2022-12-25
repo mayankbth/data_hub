@@ -60,9 +60,8 @@ class UploadExcel(APIView):
         # to execute the generated sql commands
         cursor = connection.cursor()
 
-        return Response({'message': 'File uploaded successfully'})
-    # else:
-    #     return Response(form.errors, status=400)
+        message = custom_message(message='File uploaded successfully')
+        return Response(message)
 
 
 class CursorView(APIView):

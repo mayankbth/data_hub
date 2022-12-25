@@ -21,7 +21,13 @@ def table_name_worksheet_verifier(request=None):
 
     if form.is_valid():
         excel_file = request.FILES["file"]
-        file_type_excel, wb = is_excel_file(excel_file)
+        try:
+            # when is_excel_file = True, is also returning wb
+            file_type_excel, wb = is_excel_file(excel_file)
+        except:
+            # when is_excel_file = False, is only returning False
+            file_type_excel = is_excel_file(excel_file)
+
         if file_type_excel:
             file_name = str(excel_file)
 
