@@ -13,6 +13,7 @@ from data_hub_drf.utils.custom_exceptions import InvalidPayload
 from data_hub_drf.utils.helper_functions import table_name_worksheet_verifier, data_extractor
 from data_hub_drf.utils.command_generators import model_generator, data_populator
 from data_hub_drf.utils.custom_messages import custom_message
+from data_hub_drf.utils.error_handler import error_message
 
 
 class UploadExcel(APIView):
@@ -21,7 +22,19 @@ class UploadExcel(APIView):
 
         # verifying the worksheet, excel name, and the file format.
         try:
-            worksheet, table_name = table_name_worksheet_verifier(request=request)
+            try:
+                # if form.is_valid() = True
+                worksheet, table_name = table_name_worksheet_verifier(request=request)
+                # to check what user wants create schema, populate data or both.
+                if request.POST['data']:
+                    data = request.POST['data']
+                if request.POST['schema']:
+                    schema = request.POST['schema']
+            except:
+                # if form.is_valid() = False
+                form = table_name_worksheet_verifier(request=request)
+                error = error_message(error=form.errors)
+                return Response(error, status=status.HTTP_400_BAD_REQUEST)
         except InvalidPayload as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 

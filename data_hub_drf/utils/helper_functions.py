@@ -24,8 +24,8 @@ def table_name_worksheet_verifier(request=None):
         file_type_excel, wb = is_excel_file(excel_file)
         if file_type_excel:
             file_name = str(excel_file)
+
             table_name, _ = file_name.rsplit('.', 1)
-            # wb = openpyxl.load_workbook(excel_file)
             if len(wb.worksheets) > 1:
                 raise InvalidPayload(detail='More than one Sheet provided.')
             if len(wb.worksheets) < 1:
@@ -36,6 +36,7 @@ def table_name_worksheet_verifier(request=None):
             return worksheet, table_name
         else:
             raise InvalidPayload(detail='Uploaded file is not excel.', code=400)
+    return form
 
 
 def data_extractor(worksheet=None):
