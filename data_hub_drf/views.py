@@ -14,6 +14,7 @@ from data_hub_drf.utils.helper_functions import table_name_worksheet_verifier, d
 from data_hub_drf.utils.command_generators import model_generator, data_populator
 from data_hub_drf.utils.custom_messages import custom_message
 from data_hub_drf.utils.error_handler import error_message
+from data_hub_drf.utils.Enums import _save_point_command, _rollback_save_point
 
 
 class UploadExcel(APIView):
@@ -42,26 +43,43 @@ class UploadExcel(APIView):
         # The cursor object is used to execute SQL statements and manipulate the results of the statements.
         cursor = connection.cursor()
 
-        if schema:
-            # getting an sql command to create a model
-            create_table_command = model_generator(
-                table_name=table_name,
-                row_data_1=row_data_1,
-                row_data_2=row_data_2
-            )
-            # to execute the generated sql commands
-            cursor.execute(create_table_command)
+        try:
+            # Create a savepoint
+            cursor.execute(_save_point_command)
 
-        if data:
-            # getting an sql command to populate table
-            insert_into_table_command = data_populator(
-                table_name=table_name,
-                row_data_1=row_data_1,
-                row_data_2=row_data_2,
-                row_data_3=row_data_3
-            )
-            # to execute the generated sql commands
-            cursor.execute(insert_into_table_command)
+            if schema:
+                # getting an sql command to create a model
+                create_table_command = model_generator(
+                    table_name=table_name,
+                    row_data_1=row_data_1,
+                    row_data_2=row_data_2
+                )
+                # to execute the generated sql commands
+                cursor.execute(create_table_command)
+
+            if data:
+                # getting an sql command to populate table
+                insert_into_table_command = data_populator(
+                    table_name=table_name,
+                    row_data_1=row_data_1,
+                    row_data_2=row_data_2,
+                    row_data_3=row_data_3
+                )
+                # to execute the generated sql commands
+                cursor.execute(insert_into_table_command)
+
+            # Commit the transaction
+            connection.commit()
+
+        except Exception:
+
+            # rollback to savepoint
+            connection.rollback(_rollback_save_point)
+
+            # Close the cursor to free the resource on server
+            cursor.close()
+            error = error_message(error="Something Went Wrong")
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
         # Close the cursor to free the resource on server
         cursor.close()
