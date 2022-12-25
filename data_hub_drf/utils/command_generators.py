@@ -1,14 +1,17 @@
+from data_hub_drf.utils.Enums import SCHEMA_DATA_HUB
+
+
 def model_generator(table_name=None, row_data_1=None, row_data_2=None):
     """This will generate the schema based on information in excel file and populate it if data is provided."""
 
     # getting the table
-    create_table_name = "CREATE TABLE " + str(table_name)
+    create_table_name = "CREATE TABLE " + SCHEMA_DATA_HUB + '.' + str(table_name)
 
     # converting the data of first two row into a dictionary to generate columns
     _create_columns_dictionary = dict(zip(tuple(row_data_2), tuple(row_data_1)))
     create_columns = ''
     for _column, _datatype in _create_columns_dictionary.items():
-        create_columns += "`" + _column + "`" + " " + _datatype + " ,"
+        create_columns += '"' + _column + '"' + ' ' + _datatype + ' ,'
     create_columns = create_columns[0:-2]
 
     # generating a command to create a table in db.

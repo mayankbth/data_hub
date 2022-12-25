@@ -22,44 +22,49 @@ class UploadExcel(APIView):
 
         # verifying the worksheet, excel name, and the file format.
         try:
-            try:
-                # if form.is_valid() = True
-                worksheet, table_name = table_name_worksheet_verifier(request=request)
-                # to check what user wants create schema, populate data or both.
-                if request.POST['data']:
-                    data = request.POST['data']
-                if request.POST['schema']:
-                    schema = request.POST['schema']
-            except:
-                # if form.is_valid() = False
-                form = table_name_worksheet_verifier(request=request)
-                error = error_message(error=form.errors)
-                return Response(error, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            error = error_message(error=str(e))
+            # if form.is_valid() = True
+            worksheet, table_name = table_name_worksheet_verifier(request=request)
+            # to check what user wants create schema, populate data or both.
+            if request.POST['data']:
+                data = bool(int(request.POST['data']))
+            if request.POST['schema']:
+                schema = bool(int(request.POST['schema']))
+        except:
+            form = table_name_worksheet_verifier(request=request)
+            error = error_message(error=form.errors)
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
         # extracting the data row by row in the form of three list.
         # row_data_1 = [], row_data_2 = [], row_data_3 = []
         row_data_1, row_data_2, row_data_3 = data_extractor(worksheet=worksheet)
 
-        # getting an sql command to create a model
-        create_table_command = model_generator(
-            table_name=table_name,
-            row_data_1=row_data_1,
-            row_data_2=row_data_2
-        )
-
-        # getting an sql command to populate table
-        insert_into_table_command = data_populator(
-            table_name=table_name,
-            row_data_1=row_data_1,
-            row_data_2=row_data_2,
-            row_data_3=row_data_3
-        )
-
-        # to execute the generated sql commands
+        # In Python, the connection.cursor() method is used to create a cursor object from a database connection object.
+        # The cursor object is used to execute SQL statements and manipulate the results of the statements.
         cursor = connection.cursor()
+
+        if schema:
+            # getting an sql command to create a model
+            create_table_command = model_generator(
+                table_name=table_name,
+                row_data_1=row_data_1,
+                row_data_2=row_data_2
+            )
+            # to execute the generated sql commands
+            cursor.execute(create_table_command)
+
+        if data:
+            # getting an sql command to populate table
+            insert_into_table_command = data_populator(
+                table_name=table_name,
+                row_data_1=row_data_1,
+                row_data_2=row_data_2,
+                row_data_3=row_data_3
+            )
+            # to execute the generated sql commands
+            cursor.execute(insert_into_table_command)
+
+        # Close the cursor to free the resource on server
+        cursor.close()
 
         message = custom_message(message='File uploaded successfully')
         return Response(message)
@@ -68,13 +73,6 @@ class UploadExcel(APIView):
 class CursorView(APIView):
 
     def get(self, request):
-        # try:
-        #     cursor = connection.cursor()
-        #     cursor.execute()
-        #     tables = cursor.fetchall()
-        #     cursor.close()
-        #     return Response()
-        # except:
         message = custom_message(
             message='Use the post method to get the result according to the request.'
         )
