@@ -41,7 +41,7 @@ def table_name_worksheet_verifier(request=None):
             worksheet = wb["Sheet1"]
             return worksheet, table_name
         else:
-            raise InvalidPayload(detail='Uploaded file is not excel.', code=400)
+            raise InvalidPayload(detail='Uploaded file is not excel.')
     return form
 
 
