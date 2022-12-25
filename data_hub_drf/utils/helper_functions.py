@@ -65,7 +65,9 @@ def data_extractor(worksheet=None):
 
     # to get the field values
     for row in worksheet.iter_rows(min_row=3):
+        row_data = []
         for cell in row:
-            row_data_3.append(str(cell.value))
+            row_data.append(str(cell.value))
+        row_data_3.append(row_data)
 
     return row_data_1, row_data_2, row_data_3

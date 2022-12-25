@@ -7,6 +7,7 @@ from django.db import connection
 from .forms import UploadForm
 
 from django.db import connection
+from django.db.transaction import atomic
 import openpyxl
 
 from data_hub_drf.utils.custom_exceptions import InvalidPayload
@@ -19,6 +20,7 @@ from data_hub_drf.utils.Enums import _save_point_command, _rollback_save_point
 
 class UploadExcel(APIView):
 
+    # @atomic
     def post(self, request):
 
         # verifying the worksheet, excel name, and the file format.
@@ -44,8 +46,8 @@ class UploadExcel(APIView):
         cursor = connection.cursor()
 
         try:
-            # Create a savepoint
-            cursor.execute(_save_point_command)
+            # # Create a savepoint
+            # cursor.execute("SAVEPOINT mysavepoint")
 
             if schema:
                 # getting an sql command to create a model
@@ -56,6 +58,8 @@ class UploadExcel(APIView):
                 )
                 # to execute the generated sql commands
                 cursor.execute(create_table_command)
+                # Commit the transaction
+                connection.commit()
 
             if data:
                 # getting an sql command to populate table
@@ -68,17 +72,19 @@ class UploadExcel(APIView):
                 # to execute the generated sql commands
                 cursor.execute(insert_into_table_command)
 
-            # Commit the transaction
-            connection.commit()
+                # Commit the transaction
+                connection.commit()
 
-        except Exception:
+        except Exception as e:
 
-            # rollback to savepoint
-            connection.rollback(_rollback_save_point)
+            # # rollback to savepoint
+            # cursor.execute("ROLLBACK TO SAVEPOINT mysavepoint")
 
             # Close the cursor to free the resource on server
             cursor.close()
-            error = error_message(error="Something Went Wrong")
+
+            # error = error_message(error="Something Went Wrong")
+            error = error_message(error=str(e))
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
         # Close the cursor to free the resource on server
