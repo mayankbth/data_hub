@@ -35,8 +35,9 @@ class UploadExcel(APIView):
                 form = table_name_worksheet_verifier(request=request)
                 error = error_message(error=form.errors)
                 return Response(error, status=status.HTTP_400_BAD_REQUEST)
-        except InvalidPayload as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            error = error_message(error=str(e))
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
         # extracting the data row by row in the form of three list.
         # row_data_1 = [], row_data_2 = [], row_data_3 = []
