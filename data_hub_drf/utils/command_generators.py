@@ -33,10 +33,14 @@ def data_populator(table_name=None, row_data_1=None, row_data_2=None, row_data_3
     for _ in row_data_3:
         rows = ''
         for i in _:
-            try:
-                rows += str(int(i)) + ', '
-            except:
-                rows += "'" + i + "', "
+            if i != 'None':
+                try:
+                    rows += str(int(i)) + ', '
+                except:
+                    rows += "'" + i + "', "
+            else:
+                rows += 'NULL' + ", "
+
         rows = rows[0:-2]
         all_rows += '(' + rows + ')' + ', '
     all_rows = all_rows[0:-2]

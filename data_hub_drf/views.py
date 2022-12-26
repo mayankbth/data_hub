@@ -19,6 +19,13 @@ from data_hub_drf.utils.Enums import _save_point_command, _rollback_save_point
 
 
 class UploadExcel(APIView):
+    """
+    This view provide the features for creating table, populating data into table or both at once.
+    using the following form fields:-
+    "file": to upload a excel file.
+    "data": to populate data into table.
+    "schema": to generate the schema based on provided excel.
+    """
 
     # @atomic
     def post(self, request):
