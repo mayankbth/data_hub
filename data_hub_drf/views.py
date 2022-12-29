@@ -35,10 +35,26 @@ class UploadExcel(APIView):
             # if form.is_valid() = True
             worksheet, table_name = table_name_worksheet_verifier(request=request)
             # to check what user wants create schema, populate data or both.
-            if request.POST['data']:
-                data = bool(int(request.POST['data']))
-            if request.POST['schema']:
-                schema = bool(int(request.POST['schema']))
+            error = []
+            if request.POST['data'] == 'True' or request.POST['data'] == 'False':
+                if request.POST['data'] == 'True':
+                    data = True
+                else:
+                    data = False
+            else:
+                error.append("Either provide 'True' or 'False' in the 'data' field.")
+            if request.POST['schema'] == 'True' or request.POST['schema'] == 'False':
+                if request.POST['schema'] == 'True':
+                    schema = True
+                else:
+                    schema = False
+            else:
+                error.append("Either provide 'True' or 'False' in the 'schema' field.")
+            if request.POST['schema'] == request.POST['data'] == 'False':
+                error.append("both 'data' and 'schema' can not be 'False'.")
+            if len(error) > 0:
+                error = error_message(error=error)
+                return Response(error, status=status.HTTP_400_BAD_REQUEST)
         except:
             form = table_name_worksheet_verifier(request=request)
             error = error_message(error=form.errors)
