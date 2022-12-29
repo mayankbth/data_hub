@@ -54,12 +54,12 @@ def data_extractor(worksheet=None):
     row_data_3 = []
 
     # to get the field types
-    for row in worksheet.iter_rows(max_row=1):
+    for row in worksheet.iter_rows(min_row=2, max_row=2):
         for cell in row:
             row_data_1.append(str(cell.value))
 
     # to get the field names
-    for row in worksheet.iter_rows(min_row=2, max_row=2):
+    for row in worksheet.iter_rows(max_row=1):
         for cell in row:
             row_data_2.append(str(cell.value))
 

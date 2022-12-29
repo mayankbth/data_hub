@@ -74,7 +74,7 @@ class UploadExcel(APIView):
 
             if schema:
                 # getting an sql command to create a model
-                create_table_command = model_generator(
+                create_table_command, create_meta_table_command = model_generator(
                     table_name=table_name,
                     row_data_1=row_data_1,
                     row_data_2=row_data_2
@@ -82,6 +82,9 @@ class UploadExcel(APIView):
                 # to execute the generated sql commands
                 cursor.execute(create_table_command)
                 # Commit the transaction
+                connection.commit()
+
+                cursor.execute(create_meta_table_command)
                 connection.commit()
 
             if data:
