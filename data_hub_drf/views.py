@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from django.db import connection
-from .forms import UploadForm
+from .forms import UploadForm, OperationForm
 
 from django.db import connection
 from django.db.transaction import atomic
@@ -131,5 +131,14 @@ class CrudView(APIView):
 
     def post(self, request):
 
-        all_table_list = all_tables()
-        return Response(all_table_list)
+        form = OperationForm(request.POST)
+        if form.is_valid():
+
+            # to show the list of all tables
+            if request.POST['operation_type'] == 'all_tables':
+                all_table_list = all_tables()
+                return Response(all_table_list)
+
+        else:
+            error = error_message(error=form.errors)
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
