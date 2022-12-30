@@ -16,6 +16,7 @@ from data_hub_drf.utils.command_generators import model_generator, data_populato
 from data_hub_drf.utils.custom_messages import custom_message
 from data_hub_drf.utils.error_handler import error_message
 from data_hub_drf.utils.Enums import _save_point_command, _rollback_save_point
+from data_hub_drf.utils.crud_operations import all_tables
 
 
 class UploadExcel(APIView):
@@ -120,7 +121,7 @@ class UploadExcel(APIView):
         return Response(message)
 
 
-class CursorView(APIView):
+class CrudView(APIView):
 
     def get(self, request):
         message = custom_message(
@@ -128,3 +129,7 @@ class CursorView(APIView):
         )
         return Response(message)
 
+    def post(self, request):
+
+        all_table_list = all_tables()
+        return Response(all_table_list)
