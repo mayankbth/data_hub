@@ -139,7 +139,7 @@ class AllTablesMeta(APIView):
 
     def get(self, request):
         message = custom_message(
-            message='Get the list of all data tables present in data_hub schema.'
+            message='Get the list of all meta data tables present in data_hub schema.'
         )
         return Response(message)
 
