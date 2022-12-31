@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from django.db import connection
-from .forms import UploadForm, OperationForm
+from .forms import UploadForm
 
 from django.db import connection
 from django.db.transaction import atomic
@@ -16,7 +16,7 @@ from data_hub_drf.utils.command_generators import model_generator, data_populato
 from data_hub_drf.utils.custom_messages import custom_message
 from data_hub_drf.utils.error_handler import error_message
 from data_hub_drf.utils.Enums import _save_point_command, _rollback_save_point
-from data_hub_drf.utils.crud_operations import all_tables
+from data_hub_drf.utils.crud_operations import all_tables, table_data_all
 
 
 class UploadExcel(APIView):
@@ -121,24 +121,15 @@ class UploadExcel(APIView):
         return Response(message)
 
 
-class CrudView(APIView):
+class AllTables(APIView):
 
     def get(self, request):
         message = custom_message(
-            message='Use the post method to get the result according to the request.'
+            message='Get the list of all data tables present in data_hub schema.'
         )
         return Response(message)
 
     def post(self, request):
 
-        form = OperationForm(request.POST)
-        if form.is_valid():
-
-            # to show the list of all tables
-            if request.POST['operation_type'] == 'all_tables':
-                all_table_list = all_tables()
-                return Response(all_table_list)
-
-        else:
-            error = error_message(error=form.errors)
-            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+        all_table_list = all_tables(table_type='data')
+        return Response(all_table_list)

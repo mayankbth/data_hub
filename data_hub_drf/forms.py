@@ -8,8 +8,9 @@ class UploadForm(forms.Form):
     schema = forms.CharField(max_length=10)
 
 
-class OperationForm(forms.Form):
-    operation_type_choice = (
-        ("all_tables", "all_tables"),
-    )
-    operation_type = forms.ChoiceField(choices=operation_type_choice, required=True)
+# class OperationForm(forms.Form):
+#     operation_type_choice = (
+#         ("all_tables", "all_tables"),
+#         ("table_data_all", "table_data_all"),
+#     )
+#     operation_type = forms.ChoiceField(choices=operation_type_choice, required=True)

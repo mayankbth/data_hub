@@ -1,8 +1,8 @@
 from django.urls import path
-from .views import CrudView, UploadExcel
+from .views import AllTables, UploadExcel
 
 
 urlpatterns = [
-    path('crud/', CrudView.as_view(), name='CursorView'),
+    path('all_tables/', AllTables.as_view(), name='AllTables'),
     path('file_upload/', UploadExcel.as_view(), name='UploadExcel')
 ]
