@@ -27,12 +27,14 @@ def all_tables(table_type=None):
     cursor.close()
     return all_tables_dict
 
-def table_data_all(table_name=None):
+def table_data_all(table_type=None, table_name=None):
     """show the data from table"""
-    # "select * from student"
-    table_data_all = "select * from " + SCHEMA_DATA_HUB + "." + table_name
+    if table_type == "data":
+        table_data_all = "select * from " + SCHEMA_DATA_HUB + "." + table_name
+    if table_type == "meta":
+        table_data_all = "select * from " + SCHEMA_DATA_HUB_META + "." + table_name
     cursor = connection.cursor()
     cursor.execute(table_data_all)
     result = cursor.fetchall()
     cursor.close()
-    return table_data_all
+    return result

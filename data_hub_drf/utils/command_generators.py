@@ -20,8 +20,8 @@ def model_generator(table_name=None, row_data_1=None, row_data_2=None):
     create_columns_meta = '"type" varchar(500) ,' + _create_columns_meta
 
     # generating a command to create a table in db.
-    create_table_command = create_table_name + "(" + create_columns + ");"
-    create_meta_table_command = create_table_name_meta + "(" + create_columns_meta + ");"
+    create_table_command = create_table_name + "(" + '"id" SERIAL PRIMARY KEY, ' + create_columns + ");"
+    create_meta_table_command = create_table_name_meta + "(" + '"id" SERIAL PRIMARY KEY, ' + create_columns_meta + ");"
 
     return create_table_command, create_meta_table_command
 

@@ -147,3 +147,31 @@ class AllTablesMeta(APIView):
 
         all_table_list = all_tables(table_type='meta')
         return Response(all_table_list)
+
+
+class ShowAllRowsDataTable(APIView):
+
+    def get(self, request, *args, **kwargs):
+        message = custom_message(
+            message='Show all data from data tables.'
+        )
+        return Response(message)
+
+    def post(self, request, *args, **kwargs):
+
+        table_data = table_data_all(table_type='data', table_name=kwargs['table_name'])
+        return Response(table_data)
+
+
+class ShowAllRowsDataMetaTable(APIView):
+
+    def get(self, request, *args, **kwargs):
+        message = custom_message(
+            message='Show all meta data from meta tables.'
+        )
+        return Response(message)
+
+    def post(self, request, *args, **kwargs):
+
+        table_data = table_data_all(table_type='meta', table_name=kwargs['table_name'])
+        return Response(table_data)
