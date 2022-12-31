@@ -133,3 +133,17 @@ class AllTables(APIView):
 
         all_table_list = all_tables(table_type='data')
         return Response(all_table_list)
+
+
+class AllTablesMeta(APIView):
+
+    def get(self, request):
+        message = custom_message(
+            message='Get the list of all data tables present in data_hub schema.'
+        )
+        return Response(message)
+
+    def post(self, request):
+
+        all_table_list = all_tables(table_type='meta')
+        return Response(all_table_list)
