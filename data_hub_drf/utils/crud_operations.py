@@ -35,6 +35,13 @@ def table_data_all(table_type=None, table_name=None):
         table_data_all = "select * from " + SCHEMA_DATA_HUB_META + "." + table_name
     cursor = connection.cursor()
     cursor.execute(table_data_all)
-    result = cursor.fetchall()
+    rows = cursor.fetchall()
+    field_names = [field[0] for field in cursor.description]
+    data = {}
+    i = 0
+    for row in rows:
+        i = i + 1
+        row_dict = dict(zip(field_names, row))
+        data[i] = row_dict
     cursor.close()
-    return result
+    return data
