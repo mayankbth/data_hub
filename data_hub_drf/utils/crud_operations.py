@@ -1,6 +1,8 @@
 from django.db import connection
 
-from data_hub_drf.utils.Enums import SCHEMA_DATA_HUB, SCHEMA_DATA_HUB_META
+from data_hub_drf.utils.Enums import SCHEMA_DATA_HUB, SCHEMA_DATA_HUB_META, LIMIT
+from data_hub_drf.forms import TableDataForm
+from data_hub_drf.utils.error_handler import error_message
 
 
 def all_tables(table_type=None):
@@ -27,21 +29,41 @@ def all_tables(table_type=None):
     cursor.close()
     return all_tables_dict
 
-def table_data_all(table_type=None, table_name=None):
-    """show the data from table"""
+def table_data_all(table_type=None, table_name=None, request=None):
+    """
+    show the data from table.
+    if rows are greater than 1000 then show only 1000 at once and if 1000 or less then then show all at once.
+    table_type = data, for data tables.
+    table_type = meta, for meta tables.
+    """
+
+    form = TableDataForm(request.POST, request.FILES)
+
+    if form.is_valid():
+        limit = request.POST['limit']
+        start_row_after = request.POST['start_row_after']
+        object_count_after = request.POST['object_count_after']
+    else:
+        error = error_message(error=form.errors)
+        return error
+
     if table_type == "data":
-        table_data_all = "select * from " + SCHEMA_DATA_HUB + "." + table_name
+        schema = SCHEMA_DATA_HUB
     if table_type == "meta":
-        table_data_all = "select * from " + SCHEMA_DATA_HUB_META + "." + table_name
+        schema = SCHEMA_DATA_HUB_META
+
+    table_data_all = "select * from " + schema + "." + table_name + " WHERE " + " id > " + start_row_after + " LIMIT " + limit
+
     cursor = connection.cursor()
+
     cursor.execute(table_data_all)
     rows = cursor.fetchall()
+
     field_names = [field[0] for field in cursor.description]
     data = {}
-    i = 0
     for row in rows:
-        i = i + 1
+        object_count_after = int(object_count_after) + 1
         row_dict = dict(zip(field_names, row))
-        data[i] = row_dict
+        data[object_count_after] = row_dict
     cursor.close()
     return data

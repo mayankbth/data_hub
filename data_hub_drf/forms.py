@@ -14,3 +14,9 @@ class UploadForm(forms.Form):
 #         ("table_data_all", "table_data_all"),
 #     )
 #     operation_type = forms.ChoiceField(choices=operation_type_choice, required=True)
+
+
+class TableDataForm(forms.Form):
+    limit = forms.IntegerField(required=True)
+    start_row_after = forms.IntegerField(required=True)
+    object_count_after = forms.IntegerField(required=True)

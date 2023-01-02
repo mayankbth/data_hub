@@ -159,7 +159,11 @@ class ShowAllRowsDataTable(APIView):
 
     def post(self, request, *args, **kwargs):
 
-        table_data = table_data_all(table_type='data', table_name=kwargs['table_name'])
+        table_data = table_data_all(
+            table_type='data',
+            table_name=kwargs['table_name'],
+            request=request
+        )
         return Response(table_data)
 
 
@@ -173,5 +177,9 @@ class ShowAllRowsDataMetaTable(APIView):
 
     def post(self, request, *args, **kwargs):
 
-        table_data = table_data_all(table_type='meta', table_name=kwargs['table_name'])
+        table_data = table_data_all(
+            table_type='meta',
+            table_name=kwargs['table_name'],
+            request=request
+        )
         return Response(table_data)
