@@ -38,32 +38,35 @@ def table_data_all(table_type=None, table_name=None, request=None):
     """
 
     form = TableDataForm(request.POST, request.FILES)
+    return_object = {}
 
-    if form.is_valid():
+    try:
+        form.is_valid()
         limit = request.POST['limit']
         start_row_after = request.POST['start_row_after']
         object_count_after = request.POST['object_count_after']
-    else:
-        error = error_message(error=form.errors)
-        return error
 
-    if table_type == "data":
-        schema = SCHEMA_DATA_HUB
-    if table_type == "meta":
-        schema = SCHEMA_DATA_HUB_META
+        if table_type == "data":
+            schema = SCHEMA_DATA_HUB
+        if table_type == "meta":
+            schema = SCHEMA_DATA_HUB_META
 
-    table_data_all = "select * from " + schema + "." + table_name + " WHERE " + " id > " + start_row_after + " LIMIT " + limit
+        table_data_all = "select * from " + schema + "." + table_name + " WHERE " + " id > " + start_row_after + " LIMIT " + limit
 
-    cursor = connection.cursor()
+        cursor = connection.cursor()
 
-    cursor.execute(table_data_all)
-    rows = cursor.fetchall()
+        cursor.execute(table_data_all)
+        rows = cursor.fetchall()
 
-    field_names = [field[0] for field in cursor.description]
-    data = {}
-    for row in rows:
-        object_count_after = int(object_count_after) + 1
-        row_dict = dict(zip(field_names, row))
-        data[object_count_after] = row_dict
-    cursor.close()
-    return data
+        field_names = [field[0] for field in cursor.description]
+        data = {}
+        for row in rows:
+            object_count_after = int(object_count_after) + 1
+            row_dict = dict(zip(field_names, row))
+            data[object_count_after] = row_dict
+        cursor.close()
+        return_object["table_data"] = data
+    except:
+        return_object["error"] = error_message(error=form.errors)
+
+    return return_object

@@ -118,7 +118,7 @@ class UploadExcel(APIView):
         cursor.close()
 
         message = custom_message(message='File uploaded successfully')
-        return Response(message)
+        return Response(message, status=status.HTTP_201_CREATED)
 
 
 class AllTables(APIView):
@@ -127,12 +127,12 @@ class AllTables(APIView):
         message = custom_message(
             message='Get the list of all data tables present in data_hub schema.'
         )
-        return Response(message)
+        return Response(message, status=status.HTTP_200_OK)
 
     def post(self, request):
 
         all_table_list = all_tables(table_type='data')
-        return Response(all_table_list)
+        return Response(all_table_list, status=status.HTTP_200_OK)
 
 
 class AllTablesMeta(APIView):
@@ -141,12 +141,12 @@ class AllTablesMeta(APIView):
         message = custom_message(
             message='Get the list of all meta data tables present in data_hub schema.'
         )
-        return Response(message)
+        return Response(message, status=status.HTTP_200_OK)
 
     def post(self, request):
 
         all_table_list = all_tables(table_type='meta')
-        return Response(all_table_list)
+        return Response(all_table_list, status=status.HTTP_200_OK)
 
 
 class ShowAllRowsDataTable(APIView):
@@ -155,7 +155,7 @@ class ShowAllRowsDataTable(APIView):
         message = custom_message(
             message='Show all data from data tables.'
         )
-        return Response(message)
+        return Response(message, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
 
@@ -164,7 +164,10 @@ class ShowAllRowsDataTable(APIView):
             table_name=kwargs['table_name'],
             request=request
         )
-        return Response(table_data)
+        if 'table_data' in table_data:
+            return Response(table_data, status=status.HTTP_200_OK)
+        else:
+            return Response(table_data, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ShowAllRowsDataMetaTable(APIView):
@@ -182,4 +185,7 @@ class ShowAllRowsDataMetaTable(APIView):
             table_name=kwargs['table_name'],
             request=request
         )
-        return Response(table_data)
+        if 'table_data' in table_data:
+            return Response(table_data, status=status.HTTP_200_OK)
+        else:
+            return Response(table_data, status=status.HTTP_400_BAD_REQUEST)
