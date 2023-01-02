@@ -1,6 +1,6 @@
 from django.db import connection
 
-from data_hub_drf.utils.Enums import SCHEMA_DATA_HUB, SCHEMA_DATA_HUB_META, LIMIT
+from data_hub_drf.utils.Enums import SCHEMA_DATA_HUB, SCHEMA_DATA_HUB_META
 from data_hub_drf.forms import TableDataForm
 from data_hub_drf.utils.error_handler import error_message
 
