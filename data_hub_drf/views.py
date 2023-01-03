@@ -123,27 +123,28 @@ class UploadExcel(APIView):
 
 class AllTables(APIView):
 
-    def get(self, request):
-        message = custom_message(
-            message='Get the list of all data tables present in data_hub schema.'
-        )
-        return Response(message, status=status.HTTP_200_OK)
+    # def get(self, request):
+    #     message = custom_message(
+    #         message='Get the list of all data tables present in data_hub schema.'
+    #     )
+    #     return Response(message, status=status.HTTP_200_OK)
 
+    # def post(self, request):
     def post(self, request):
-
         all_table_list = all_tables(table_type='data')
         return Response(all_table_list, status=status.HTTP_200_OK)
 
 
 class AllTablesMeta(APIView):
 
-    def get(self, request):
-        message = custom_message(
-            message='Get the list of all meta data tables present in data_hub schema.'
-        )
-        return Response(message, status=status.HTTP_200_OK)
+    # def get(self, request):
+    #     message = custom_message(
+    #         message='Get the list of all meta data tables present in data_hub schema.'
+    #     )
+    #     return Response(message, status=status.HTTP_200_OK)
 
-    def post(self, request):
+    # def post(self, request):
+    def get(self, request):
 
         all_table_list = all_tables(table_type='meta')
         return Response(all_table_list, status=status.HTTP_200_OK)
@@ -152,13 +153,11 @@ class AllTablesMeta(APIView):
 class ShowAllRowsDataTable(APIView):
 
     def get(self, request, *args, **kwargs):
-        message = custom_message(
-            message='Show all data from data tables.'
-        )
-        return Response(message, status=status.HTTP_200_OK)
-
-    def post(self, request, *args, **kwargs):
-
+        page = request.query_params.get('page')
+        # message = custom_message(
+        #     # message='Show all data from data tables.'
+        #     message=page
+        # )
         table_data = table_data_all(
             table_type='data',
             table_name=kwargs['table_name'],
@@ -168,18 +167,28 @@ class ShowAllRowsDataTable(APIView):
             return Response(table_data, status=status.HTTP_200_OK)
         else:
             return Response(table_data, status=status.HTTP_400_BAD_REQUEST)
+        # return Response(message, status=status.HTTP_200_OK)
+
+    # def post(self, request, *args, **kwargs):
+    #
+    #     table_data = table_data_all(
+    #         table_type='data',
+    #         table_name=kwargs['table_name'],
+    #         request=request
+    #     )
+    #     if 'table_data' in table_data:
+    #         return Response(table_data, status=status.HTTP_200_OK)
+    #     else:
+    #         return Response(table_data, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ShowAllRowsDataMetaTable(APIView):
 
     def get(self, request, *args, **kwargs):
-        message = custom_message(
-            message='Show all meta data from meta tables.'
-        )
-        return Response(message)
-
-    def post(self, request, *args, **kwargs):
-
+        # message = custom_message(
+        #     message='Show all meta data from meta tables.'
+        # )
+        # return Response(message)
         table_data = table_data_all(
             table_type='meta',
             table_name=kwargs['table_name'],
@@ -189,6 +198,18 @@ class ShowAllRowsDataMetaTable(APIView):
             return Response(table_data, status=status.HTTP_200_OK)
         else:
             return Response(table_data, status=status.HTTP_400_BAD_REQUEST)
+
+    # def post(self, request, *args, **kwargs):
+    #
+    #     table_data = table_data_all(
+    #         table_type='meta',
+    #         table_name=kwargs['table_name'],
+    #         request=request
+    #     )
+    #     if 'table_data' in table_data:
+    #         return Response(table_data, status=status.HTTP_200_OK)
+    #     else:
+    #         return Response(table_data, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RetrieveUpdateRowDataTable(APIView):

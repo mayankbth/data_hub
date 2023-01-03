@@ -8,4 +8,3 @@ SCHEMA_DATA_HUB_META = 'data_hub_meta'
 _save_point = 'mysavepoint'
 _save_point_command = "SAVEPOINT " + _save_point
 _rollback_save_point = "ROLLBACK TO SAVEPOINT " + _save_point
-

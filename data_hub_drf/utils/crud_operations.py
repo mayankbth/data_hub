@@ -36,39 +36,62 @@ def table_data_all(table_type=None, table_name=None, request=None):
     if rows are greater than 1000 then show only 1000 at once and if 1000 or less then then show all at once.
     table_type = data, for data tables.
     table_type = meta, for meta tables.
+    provide "page" and "limit" for pagination.
     """
 
-    form = TableDataForm(request.POST, request.FILES)
+    # form = TableDataForm(request.POST, request.FILES)
     return_object = {}
 
+    # try:
+        # form.is_valid()
+        # limit = request.POST['limit']
+        # start_row_after = request.POST['start_row_after']
+        # object_count_after = request.POST['object_count_after']
+
+    if table_type == "data":
+        schema = SCHEMA_DATA_HUB
+    if table_type == "meta":
+        schema = SCHEMA_DATA_HUB_META
+
+    cursor = connection.cursor()
+    data_count = "SELECT COUNT(*) FROM " + schema + "." + table_name
+    cursor.execute(data_count)
+    data_count = cursor.fetchone()[0]
+
     try:
-        form.is_valid()
-        limit = request.POST['limit']
-        start_row_after = request.POST['start_row_after']
-        object_count_after = request.POST['object_count_after']
-
-        if table_type == "data":
-            schema = SCHEMA_DATA_HUB
-        if table_type == "meta":
-            schema = SCHEMA_DATA_HUB_META
-
-        table_data_all = "select * from " + schema + "." + table_name + " WHERE " + " id > " + start_row_after + " LIMIT " + limit
-
-        cursor = connection.cursor()
-
-        cursor.execute(table_data_all)
-        rows = cursor.fetchall()
-
-        field_names = [field[0] for field in cursor.description]
-        data = {}
-        for row in rows:
-            object_count_after = int(object_count_after) + 1
-            row_dict = dict(zip(field_names, row))
-            data[object_count_after] = row_dict
-        cursor.close()
-        return_object["table_data"] = data
+        page = int(request.query_params.get('page'))
+        limit = int(request.query_params.get('limit'))
+        if data_count % limit == 0:
+            total_pages = data_count // limit
+        else:
+            total_pages = data_count // limit
+            total_pages = total_pages + 1
+        table_data_all = "SELECT * FROM " + schema + "." + table_name + " LIMIT " + str(limit) + " OFFSET " + str((page - 1) * limit)
     except:
-        return_object["error"] = error_message(error=form.errors)
+        # table_data_all = "select * from " + schema + "." + table_name + " WHERE " + " id > " + start_row_after + " LIMIT " + limit
+        table_data_all = "SELECT * FROM " + schema + "." + table_name
+
+    cursor.execute(table_data_all)
+    rows = cursor.fetchall()
+
+    field_names = [field[0] for field in cursor.description]
+    data = {}
+    object_count_after = 0
+    for row in rows:
+        # object_count_after = int(object_count_after) + 1
+        object_count_after = object_count_after + 1
+        row_dict = dict(zip(field_names, row))
+        data[object_count_after] = row_dict
+    cursor.close()
+    return_object["current_page_info"] = {
+        'page': page,
+        'current_objects': object_count_after,
+        'total_pages': total_pages,
+        'total_objects': data_count
+    }
+    return_object["table_data"] = data
+    # except:
+    #     return_object["error"] = error_message(error=form.errors)
 
     return return_object
 
