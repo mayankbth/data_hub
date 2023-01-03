@@ -16,7 +16,7 @@ from data_hub_drf.utils.command_generators import model_generator, data_populato
 from data_hub_drf.utils.custom_messages import custom_message
 from data_hub_drf.utils.error_handler import error_message
 from data_hub_drf.utils.Enums import _save_point_command, _rollback_save_point
-from data_hub_drf.utils.crud_operations import all_tables, table_data_all
+from data_hub_drf.utils.crud_operations import all_tables, table_data_all, table_data_row, row_update
 
 
 class UploadExcel(APIView):
@@ -189,3 +189,64 @@ class ShowAllRowsDataMetaTable(APIView):
             return Response(table_data, status=status.HTTP_200_OK)
         else:
             return Response(table_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RetrieveUpdateRowDataTable(APIView):
+
+    def get(self, request, *args, **kwargs):
+        row_object = table_data_row(
+            table_type='data',
+            table_name=kwargs['table_name'],
+            pk=kwargs['pk']
+        )
+        if ('error' in row_object) and (row_object['error'] == "No data found."):
+            error = error_message(error=row_object['error'])
+            return Response(error, status=status.HTTP_204_NO_CONTENT)
+        if 'error' in row_object:
+            error = error_message(error=row_object['error'])
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+        return Response(row_object['row_data'], status=status.HTTP_200_OK)
+
+    def patch(self, request, *args, **kwargs):
+        row_object = row_update(
+            table_type='data',
+            table_name=kwargs['table_name'],
+            pk=kwargs['pk'],
+            request=request
+        )
+        if 'error' in row_object:
+            error = error_message(error=row_object['error'])
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+        return Response(row_object['row_data'])
+
+
+class RetrieveUpdateRowMetaTable(APIView):
+
+    def get(self, request, *args, **kwargs):
+        row_object = table_data_row(
+            table_type='meta',
+            table_name=kwargs['table_name'],
+            pk=kwargs['pk']
+        )
+        if ('error' in row_object) and (row_object['error'] == "No data found."):
+            error = error_message(error=row_object['error'])
+            return Response(error, status=status.HTTP_204_NO_CONTENT)
+        if 'error' in row_object:
+            error = error_message(error=row_object['error'])
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+        return Response(row_object['row_data'], status=status.HTTP_200_OK)
+
+    def patch(self, request, *args, **kwargs):
+        row_object = row_update(
+            table_type='meta',
+            table_name=kwargs['table_name'],
+            pk=kwargs['pk'],
+            request=request
+        )
+        if 'error' in row_object:
+            error = error_message(error=row_object['error'])
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+        return Response(row_object['row_data'])
+
+    def delete(self, request, *args, **kwargs):
+        pass

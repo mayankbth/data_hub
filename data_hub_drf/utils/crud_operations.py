@@ -1,3 +1,4 @@
+import psycopg2
 from django.db import connection
 
 from data_hub_drf.utils.Enums import SCHEMA_DATA_HUB, SCHEMA_DATA_HUB_META
@@ -70,3 +71,85 @@ def table_data_all(table_type=None, table_name=None, request=None):
         return_object["error"] = error_message(error=form.errors)
 
     return return_object
+
+
+def table_data_row(table_type=None, table_name=None, pk=None):
+    """
+    show the data from table.
+    table_type = data, for data tables.
+    table_type = meta, for meta tables.
+    """
+
+    if table_type == "data":
+        schema = SCHEMA_DATA_HUB
+    if table_type == "meta":
+        schema = SCHEMA_DATA_HUB_META
+
+    row_data = "SELECT * FROM " + schema + "." + table_name + " WHERE id = " + str(pk)
+
+    return_object = {}
+    try:
+        cursor = connection.cursor()
+        cursor.execute(row_data)
+        row = cursor.fetchone()
+        if row == None:
+            return_object['error'] = "No data found."
+            return return_object
+    except psycopg2.Error as e:
+        return_object['error'] = e
+        return return_object
+
+    field_names = [field[0] for field in cursor.description]
+
+    row_dict = dict(zip(field_names, row))
+
+    cursor.close()
+
+    return_object['row_data'] = row_dict
+
+    return return_object
+
+
+def row_update(table_type=None, table_name=None, pk=None, request=None):
+    """
+    update the row from table.
+    table_type = data, for data tables.
+    table_type = meta, for meta tables.
+    """
+
+    if table_type == "data":
+        schema = SCHEMA_DATA_HUB
+    if table_type == "meta":
+        schema = SCHEMA_DATA_HUB_META
+
+    row_data = table_data_row(table_type=table_type, table_name=table_name, pk=pk)
+    data = request.data
+    _str = ""
+    for key, value in data.items():
+        _str += key + " = " + "'" + str(value) + "'" + ", "
+    _str = _str[:-2]
+    row_data_update_command = "UPDATE " + schema + "." + table_name + " SET " + _str + " WHERE id = " + str(pk) + ";"
+    return_object = {}
+    try:
+        cursor = connection.cursor()
+        cursor.execute(row_data_update_command)
+        connection.commit()
+    except psycopg2.Error as e:
+        return_object['error'] = e
+        return return_object
+    return_object['row_data'] = table_data_row(table_type=table_type, table_name=table_name, pk=pk)
+    return return_object
+
+
+def row_delete(table_type=None, table_name=None, pk=None, request=None):
+    """
+    to delete the row from table.
+    table_type = data, for data tables.
+    table_type = meta, for meta tables.
+    """
+
+    if table_type == "data":
+        schema = SCHEMA_DATA_HUB
+    if table_type == "meta":
+        schema = SCHEMA_DATA_HUB_META
+    pass
