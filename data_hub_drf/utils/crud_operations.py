@@ -66,10 +66,10 @@ def table_data_all(table_type=None, table_name=None, request=None):
         else:
             total_pages = data_count // limit
             total_pages = total_pages + 1
-        table_data_all = "SELECT * FROM " + schema + "." + table_name + " LIMIT " + str(limit) + " OFFSET " + str((page - 1) * limit)
+        table_data_all = "SELECT * FROM " + schema + "." + table_name + " ORDER BY id ASC" + " LIMIT " + str(limit) + " OFFSET " + str((page - 1) * limit) + ";"
     except:
         # table_data_all = "select * from " + schema + "." + table_name + " WHERE " + " id > " + start_row_after + " LIMIT " + limit
-        table_data_all = "SELECT * FROM " + schema + "." + table_name
+        table_data_all = "SELECT * FROM " + schema + "." + table_name + " ORDER BY id ASC;"
 
     cursor.execute(table_data_all)
     rows = cursor.fetchall()
@@ -83,15 +83,16 @@ def table_data_all(table_type=None, table_name=None, request=None):
         row_dict = dict(zip(field_names, row))
         data[object_count_after] = row_dict
     cursor.close()
-    return_object["current_page_info"] = {
-        'page': page,
-        'current_objects': object_count_after,
-        'total_pages': total_pages,
-        'total_objects': data_count
-    }
-    return_object["table_data"] = data
-    # except:
-    #     return_object["error"] = error_message(error=form.errors)
+    try:
+        return_object["current_page_info"] = {
+            'page': page,
+            'current_objects': object_count_after,
+            'total_pages': total_pages,
+            'total_objects': data_count
+        }
+        return_object["table_data"] = data
+    except:
+        return_object["table_data"] = data
 
     return return_object
 

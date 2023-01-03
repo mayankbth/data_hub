@@ -130,7 +130,7 @@ class AllTables(APIView):
     #     return Response(message, status=status.HTTP_200_OK)
 
     # def post(self, request):
-    def post(self, request):
+    def get(self, request):
         all_table_list = all_tables(table_type='data')
         return Response(all_table_list, status=status.HTTP_200_OK)
 
