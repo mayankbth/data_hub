@@ -119,8 +119,14 @@ def table_data_row(table_type=None, table_name=None, pk=None):
         if row == None:
             return_object['error'] = "No data found."
             return return_object
-    except psycopg2.Error as e:
-        return_object['error'] = e
+    except Exception as e:
+        _error = []
+        _string = str(e)
+        if "does not exist" in _string:
+            _error.append("The table you are trying to access does not exist.")
+        else:
+            _error.append(str(e))
+        return_object['error'] = _error
         return return_object
 
     field_names = [field[0] for field in cursor.description]
