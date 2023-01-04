@@ -18,6 +18,8 @@ from data_hub_drf.utils.error_handler import error_message
 from data_hub_drf.utils.Enums import _save_point_command, _rollback_save_point
 from data_hub_drf.utils.crud_operations import all_tables, table_data_all, table_data_row, row_update
 
+from django.db import ProgrammingError
+
 
 class UploadExcel(APIView):
     """
@@ -107,7 +109,8 @@ class UploadExcel(APIView):
                 connection.commit()
                 _message.append("Data has been populated in the table.")
 
-        except Exception as e:
+        # except Exception as e:
+        except ProgrammingError as e:
 
             # # rollback to savepoint
             # cursor.execute("ROLLBACK TO SAVEPOINT mysavepoint")
@@ -115,7 +118,13 @@ class UploadExcel(APIView):
             # Close the cursor to free the resource on server
             cursor.close()
 
-            _error.append("Table already exists with that name.")
+            _string = str(e)
+            if "already exists" in _string:
+                _error.append("Table already exists with that name.")
+            elif "does not exist" in _string:
+                _error.append("The table you are trying to populate with data does not exist.")
+            else:
+                _error.append(str(e))
             error = error_message(error=_error)
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
