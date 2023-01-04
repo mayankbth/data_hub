@@ -1,5 +1,6 @@
 import psycopg2
 from django.db import connection
+from django.db import IntegrityError
 
 from data_hub_drf.utils.Enums import SCHEMA_DATA_HUB, SCHEMA_DATA_HUB_META
 from data_hub_drf.forms import TableDataForm
@@ -164,8 +165,13 @@ def row_update(table_type=None, table_name=None, pk=None, request=None):
         cursor = connection.cursor()
         cursor.execute(row_data_update_command)
         connection.commit()
-    except psycopg2.Error as e:
-        return_object['error'] = e
+        cursor.close()
+
+    except IntegrityError as e:
+        if ("duplicate key value violates unique constraint" and "id") in str(e):
+            return_object['error'] = "Id can not be updated."
+        else:
+            return_object['error'] = str(e)
         return return_object
     return_object['row_data'] = table_data_row(table_type=table_type, table_name=table_name, pk=pk)
     return return_object
