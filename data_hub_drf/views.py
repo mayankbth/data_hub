@@ -31,34 +31,36 @@ class UploadExcel(APIView):
     # @atomic
     def post(self, request):
 
+        _message = []
+        _error = []
         # verifying the worksheet, excel name, and the file format.
         try:
             # if form.is_valid() = True
             worksheet, table_name = table_name_worksheet_verifier(request=request)
             # to check what user wants create schema, populate data or both.
-            error = []
             if request.POST['data'] == 'True' or request.POST['data'] == 'False':
                 if request.POST['data'] == 'True':
                     data = True
                 else:
                     data = False
             else:
-                error.append("Either provide 'True' or 'False' in the 'data' field.")
+                _error.append("Either provide 'True' or 'False' in the 'data' field.")
             if request.POST['schema'] == 'True' or request.POST['schema'] == 'False':
                 if request.POST['schema'] == 'True':
                     schema = True
                 else:
                     schema = False
             else:
-                error.append("Either provide 'True' or 'False' in the 'schema' field.")
+                _error.append("Either provide 'True' or 'False' in the 'schema' field.")
             if request.POST['schema'] == request.POST['data'] == 'False':
-                error.append("both 'data' and 'schema' can not be 'False'.")
-            if len(error) > 0:
-                error = error_message(error=error)
+                _error.append("Both 'data' and 'schema' can not be 'False'.")
+            if len(_error) > 0:
+                error = error_message(error=_error)
                 return Response(error, status=status.HTTP_400_BAD_REQUEST)
         except:
             form = table_name_worksheet_verifier(request=request)
-            error = error_message(error=form.errors)
+            _error.append(form.errors)
+            error = error_message(error=_error)
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
         # extracting the data row by row in the form of three list.
@@ -84,9 +86,11 @@ class UploadExcel(APIView):
                 cursor.execute(create_table_command)
                 # Commit the transaction
                 connection.commit()
+                _message.append("Table has been created.")
 
                 cursor.execute(create_meta_table_command)
                 connection.commit()
+                _message.append("Meta Table has been created.")
 
             if data:
                 # getting an sql command to populate table
@@ -101,6 +105,7 @@ class UploadExcel(APIView):
 
                 # Commit the transaction
                 connection.commit()
+                _message.append("Data has been populated in the table.")
 
         except Exception as e:
 
@@ -110,14 +115,13 @@ class UploadExcel(APIView):
             # Close the cursor to free the resource on server
             cursor.close()
 
-            # error = error_message(error="Something Went Wrong")
-            error = error_message(error=str(e))
+            _error.append("Table already exists with that name.")
+            error = error_message(error=_error)
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
-        # Close the cursor to free the resource on server
         cursor.close()
 
-        message = custom_message(message='File uploaded successfully')
+        message = custom_message(message=_message)
         return Response(message, status=status.HTTP_201_CREATED)
 
 
