@@ -166,11 +166,6 @@ class AllTablesMeta(APIView):
 class ShowAllRowsDataTable(APIView):
 
     def get(self, request, *args, **kwargs):
-        page = request.query_params.get('page')
-        # message = custom_message(
-        #     # message='Show all data from data tables.'
-        #     message=page
-        # )
         table_data = table_data_all(
             table_type='data',
             table_name=kwargs['table_name'],
@@ -180,19 +175,6 @@ class ShowAllRowsDataTable(APIView):
             return Response(table_data, status=status.HTTP_200_OK)
         else:
             return Response(table_data, status=status.HTTP_400_BAD_REQUEST)
-        # return Response(message, status=status.HTTP_200_OK)
-
-    # def post(self, request, *args, **kwargs):
-    #
-    #     table_data = table_data_all(
-    #         table_type='data',
-    #         table_name=kwargs['table_name'],
-    #         request=request
-    #     )
-    #     if 'table_data' in table_data:
-    #         return Response(table_data, status=status.HTTP_200_OK)
-    #     else:
-    #         return Response(table_data, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ShowAllRowsDataMetaTable(APIView):
