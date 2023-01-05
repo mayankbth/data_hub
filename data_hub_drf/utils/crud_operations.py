@@ -40,14 +40,7 @@ def table_data_all(table_type=None, table_name=None, request=None):
     provide "page" and "limit" for pagination.
     """
 
-    # form = TableDataForm(request.POST, request.FILES)
     return_object = {}
-
-    # try:
-        # form.is_valid()
-        # limit = request.POST['limit']
-        # start_row_after = request.POST['start_row_after']
-        # object_count_after = request.POST['object_count_after']
 
     if table_type == "data":
         schema = SCHEMA_DATA_HUB
@@ -69,7 +62,6 @@ def table_data_all(table_type=None, table_name=None, request=None):
             total_pages = total_pages + 1
         table_data_all = "SELECT * FROM " + schema + "." + table_name + " ORDER BY id ASC" + " LIMIT " + str(limit) + " OFFSET " + str((page - 1) * limit) + ";"
     except:
-        # table_data_all = "select * from " + schema + "." + table_name + " WHERE " + " id > " + start_row_after + " LIMIT " + limit
         table_data_all = "SELECT * FROM " + schema + "." + table_name + " ORDER BY id ASC;"
 
     cursor.execute(table_data_all)
@@ -79,7 +71,6 @@ def table_data_all(table_type=None, table_name=None, request=None):
     data = {}
     object_count_after = 0
     for row in rows:
-        # object_count_after = int(object_count_after) + 1
         object_count_after = object_count_after + 1
         row_dict = dict(zip(field_names, row))
         data[object_count_after] = row_dict
