@@ -7,6 +7,7 @@ from django.db import connection
 from .forms import UploadForm
 
 from django.db import connection
+from django.db.utils import DataError
 from django.db.transaction import atomic
 import openpyxl
 
@@ -25,9 +26,64 @@ class UploadExcel(APIView):
     """
     This view provide the features for creating table, populating data into table or both at once.
     using the following form fields:-
+
     "file": to upload a excel file.
     "data": to populate data into table.
     "schema": to generate the schema based on provided excel.
+
+    "data_types": to provide the data types of field of the table while creating it.
+        it can be done in two ways (either explicit declaration or implicit)
+            method 1: explicit declaration of data_types.
+            method 2: implicit declaration of data_types.
+
+    Note:-
+    there are two ways in which we can generate or create table and populate data.
+
+    method 1:-
+    In this we need to provide the data type in row 2 to create schema.
+    example:
+        +------------+----------------+-----------+-------+----------------+
+        | product    | actual_cost_2  | batch_id  | loss  | market_cost_2  |
+        +============+================+===========+=======+================+
+        | varchar(50)| int            | int       | int   | int            |
+        +------------+----------------+-----------+-------+----------------+
+        | Lassi      | 300            | 0         | 123   | 500            |
+        +------------+----------------+-----------+-------+----------------+
+        | chhanchh   | 100            | 0         | 124   | 300            |
+        +------------+----------------+-----------+-------+----------------+
+        |            | 600            | 0         |       | 800            |
+        +------------+----------------+-----------+-------+----------------+
+        | chai       | 50             |           | 126   | 100            |
+        +------------+----------------+-----------+-------+----------------+
+    here row 1 is headers or field names, row 2 is data type of fields or headers and remaining rows are data to be
+    populated when provided which will be stored in row 3 to populate the data in the create table.
+
+    method 2:-
+    method 2 is almost same as method 1 however the catch is in method two there will not be any data type define in
+    row 2 so the excel fill will just contains the field names and data to be populated like this.
+    example:
+        +------------+----------------+-----------+-------+----------------+
+        | product    | actual_cost_2  | batch_id  | loss  | market_cost_2  |
+        +============+================+===========+=======+================+
+        | Lassi      | 300            | 0         | 123   | 500            |
+        +------------+----------------+-----------+-------+----------------+
+        | chhanchh   | 100            | 0         | 124   | 300            |
+        +------------+----------------+-----------+-------+----------------+
+        |            | 600            | 0         |       | 800            |
+        +------------+----------------+-----------+-------+----------------+
+        | chai       | 50             |           | 126   | 100            |
+        +------------+----------------+-----------+-------+----------------+
+    however we still need to provide the data types for the fields and to do that we will be sending the data type
+    through request i.e. request.data in this format
+        {
+            "Product": "varchar(50)",
+            "actual_cost_2": "int",
+            "batch_id": "int",
+            "loss": "int",
+            "market_cost_2": "int"
+        }
+        Note: the order needs to be same as the fields in the excel are given.
+        i.e. it should be ordered dictionary.
     """
 
     # @atomic
@@ -39,7 +95,7 @@ class UploadExcel(APIView):
         try:
             # if form.is_valid() = True
             worksheet, table_name = table_name_worksheet_verifier(request=request)
-            # to check what user wants create schema, populate data or both.
+            # to check what user wants, create schema, populate data or both.
             if request.POST['data'] == 'True' or request.POST['data'] == 'False':
                 if request.POST['data'] == 'True':
                     data = True
@@ -67,7 +123,18 @@ class UploadExcel(APIView):
 
         # extracting the data row by row in the form of three list.
         # row_data_1 = [], row_data_2 = [], row_data_3 = []
-        row_data_1, row_data_2, row_data_3 = data_extractor(worksheet=worksheet)
+        # checking if "data_types" are provided explicitly in the form or in the excel.
+        if 'data_types' in request.POST:
+            # method 2
+            try:
+                row_data_1, row_data_2, row_data_3 = data_extractor(worksheet=worksheet, data_types=request.POST['data_types'])
+            except:
+                _error = data_extractor(worksheet=worksheet, data_types=request.POST['data_types'])
+                error = error_message(error=_error)
+                return Response(error, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            # method 1
+            row_data_1, row_data_2, row_data_3 = data_extractor(worksheet=worksheet)
 
         # In Python, the connection.cursor() method is used to create a cursor object from a database connection object.
         # The cursor object is used to execute SQL statements and manipulate the results of the statements.
@@ -102,11 +169,27 @@ class UploadExcel(APIView):
                     row_data_2=row_data_2,
                     row_data_3=row_data_3
                 )
-                # to execute the generated sql commands
-                cursor.execute(insert_into_table_command)
+                try:
+                    # to execute the generated sql commands
+                    cursor.execute(insert_into_table_command)
+                    # Commit the transaction
+                    connection.commit()
+                # except DataError as e:
+                #     error = error_message(error=str(e))
+                #     return Response(error, status=status.HTTP_400_BAD_REQUEST)
+                except Exception as e:
+                    _string = str(e)
+                    if "invalid input" in _string:
+                        error = error_message(error="Data provided in excel is invalid.")
+                    elif "syntax error" in _string:
+                        error = error_message(
+                            error="Please check if appropriate 'method' is activated for file upload or 'data_types' are provided or the excel format is correct."
+                        )
+                    else:
+                        error = error_message(error=str(e))
+                    cursor.close()
+                    return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
-                # Commit the transaction
-                connection.commit()
                 _message.append("Data has been populated in the table.")
 
         # except Exception as e:
@@ -125,11 +208,11 @@ class UploadExcel(APIView):
                 _error.append("The table you are trying to populate with data does not exist.")
             else:
                 _error.append(str(e))
+
             error = error_message(error=_error)
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
         cursor.close()
-
         message = custom_message(message=_message)
         return Response(message, status=status.HTTP_201_CREATED)
 

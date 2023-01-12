@@ -6,6 +6,7 @@ class UploadForm(forms.Form):
     # Provide 'True' or 'False' for the BooleanField
     data = forms.CharField(max_length=10)
     schema = forms.CharField(max_length=10)
+    data_types = forms.JSONField(required=False)
 
 
 # class OperationForm(forms.Form):
