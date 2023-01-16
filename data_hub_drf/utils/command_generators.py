@@ -14,9 +14,10 @@ def model_generator(table_name=None, row_data_1=None, row_data_2=None):
     create_columns_meta = ''
     for _column, _datatype in _create_columns_dictionary.items():
         create_columns += '"' + _column + '"' + ' ' + _datatype + ' ,'
-        create_columns_meta += '"' + _column + '"' + ' ' + 'varchar(500)' + ' ,'
+        create_columns_meta += '"' + _column + '"' + ' ' + 'BOOLEAN' + ' ,'
     create_columns = create_columns[0:-2]
     _create_columns_meta = create_columns_meta[0:-2]
+    # adding "attribute" column in meta tables to perform the operations on data_tables based on the attribute definations.
     create_columns_meta = '"type" varchar(500) ,' + _create_columns_meta
 
     # generating a command to create a table in db.
