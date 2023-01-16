@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import AllTables, UploadExcel, AllTablesMeta, ShowAllRowsDataTable, ShowAllRowsDataMetaTable, \
-    RetrieveUpdateRowDataTable, RetrieveUpdateRowMetaTable
+    RetrieveUpdateRowDataTable, RetrieveUpdateRowMetaTable, TableCreator
 
 
 urlpatterns = [
@@ -10,6 +10,9 @@ urlpatterns = [
 
     # creating tables and populating it with data.
     path('file_upload/', UploadExcel.as_view(), name='UploadExcel'),
+
+    # creating table
+    path('table_creator/', TableCreator.as_view(), name='UploadExcel'),
 
     # to retrieve data from tables with pagination.
     path('table_data/<str:table_name>/', ShowAllRowsDataTable.as_view(), name='ShowAllRowsDataTable'),

@@ -114,3 +114,35 @@ def data_extractor(worksheet=None, data_types=None):
             row_data_3.append(row_data)
 
     return row_data_1, row_data_2, row_data_3
+
+
+def data_types_extractors(data_types=None, extra_fields=None):
+    """
+    extracting the "key", "value" pair or "data_types" provided.
+    :param data_types, extra_fields:
+    :return:
+    """
+
+    try:
+        data_types = json.loads(data_types)
+        if extra_fields != None:
+            data_types.update(extra_fields)
+        keys = []
+        values = []
+        for key, value in data_types.items():
+            keys.append(key)
+            values.append(value)
+    except json.decoder.JSONDecodeError as e:
+        _error = f"An error occurred: {e}"
+
+    try:
+        return_dict = {
+            "error": _error
+        }
+    except:
+        return_dict = {
+            "field_names": keys,
+            "field_types": values
+        }
+
+    return return_dict

@@ -11,8 +11,10 @@ from django.db.utils import DataError
 from django.db.transaction import atomic
 import openpyxl
 
+from data_hub_drf.forms import TableCreatorForm
+
 from data_hub_drf.utils.custom_exceptions import InvalidPayload
-from data_hub_drf.utils.helper_functions import table_name_worksheet_verifier, data_extractor
+from data_hub_drf.utils.helper_functions import table_name_worksheet_verifier, data_extractor, data_types_extractors
 from data_hub_drf.utils.command_generators import model_generator, data_populator
 from data_hub_drf.utils.custom_messages import custom_message
 from data_hub_drf.utils.error_handler import error_message
@@ -213,6 +215,98 @@ class UploadExcel(APIView):
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
         cursor.close()
+        message = custom_message(message=_message)
+        return Response(message, status=status.HTTP_201_CREATED)
+
+
+class TableCreator(APIView):
+    """
+    to create table based on "data_types" and "table_name" provided
+    example:
+        "table_name": "table_1"
+        "data_types": "{
+                        "product": "varchar(50)",
+                        "actual_cost_2": "int",
+                        "batch_id": "int",
+                        "loss": "int",
+                        "market_cost_2":
+                        "int"
+                    }"
+
+        will create a table inside "data_hub" schema with name "table_1" and the fields according to "data_types" with
+        and one extra field named "delete" having default values "False".
+    """
+
+    def post(self, request):
+
+        _message = []
+        _error = []
+        form = TableCreatorForm(request.POST)
+
+        if form.is_valid():
+            table_name = request.POST['table_name']
+            data_types = request.POST['data_types']
+        else:
+            _error = form.errors
+            error = error_message(error=_error)
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+
+        # custom validation:
+        if len(table_name) > 63:
+            _error.append("'table_name' can_not be more than 63 characters.")
+        # to perform the regular_expression on "table_name" to check the validity of table_name provide.
+        import re
+        match = re.match(r"^[a-z_][a-z0-9_]*$", table_name)
+        if match:
+            # string (table_name) is valid.
+            pass
+        else:
+            _error.append("'table_name' can only start with lowercase or underscores and it can only consist of underscores, lowercase or numbers.")
+        if "delete" in data_types:
+            _error.append("Can not create a field with name 'delete'.")
+        if len(_error) > 0:
+            error = error_message(error=_error)
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+
+        # adding "soft_delete" field
+        extra_fields = {
+            "soft_delete": "BOOLEAN"
+        }
+        _dict = data_types_extractors(data_types=data_types, extra_fields=extra_fields)
+        if "error" in _dict:
+            error = error_message(error=_error)
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            field_names = _dict["field_names"]
+            field_types = _dict["field_types"]
+
+        # getting the postgres sql command to create table and meta table
+        create_table_command, create_meta_table_command = model_generator(
+            table_name=table_name,
+            row_data_1=field_types,
+            row_data_2=field_names
+        )
+
+        # creating cursor to execute SQL commands
+        cursor = connection.cursor()
+
+        try:
+            cursor.execute(create_table_command)
+            # Commit the transaction
+            connection.commit()
+            _message.append("Table has been created.")
+
+            cursor.execute(create_meta_table_command)
+            # Commit the transaction
+            connection.commit()
+            _message.append("Meta Table has been created")
+        except Exception as e:
+            _error.append(str(e))
+            error = error_message(error=_error)
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+
+        cursor.close()
+
         message = custom_message(message=_message)
         return Response(message, status=status.HTTP_201_CREATED)
 

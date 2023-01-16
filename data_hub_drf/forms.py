@@ -43,6 +43,12 @@ class UploadForm(forms.Form):
             raise forms.ValidationError("File must be a Excel.")
 
 
+class TableCreatorForm(forms.Form):
+
+    table_name = forms.CharField(max_length=100)
+    data_types = forms.JSONField()
+
+
 class TableDataForm(forms.Form):
     limit = forms.IntegerField(required=True)
     start_row_after = forms.IntegerField(required=True)
