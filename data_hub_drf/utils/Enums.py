@@ -2,6 +2,7 @@
 SCHEMA_PUBLIC = 'public'
 SCHEMA_DATA_HUB = 'data_hub'
 SCHEMA_DATA_HUB_META = 'data_hub_meta'
+SCHEMA_MASTER = 'master'
 
 
 # save point and rollback commands for atomic transaction

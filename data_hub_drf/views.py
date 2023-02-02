@@ -281,7 +281,7 @@ class TableCreator(APIView):
             field_types = _dict["field_types"]
 
         # getting the postgres sql command to create table and meta table
-        create_table_command, create_meta_table_command = model_generator(
+        create_table_command, create_meta_table_command, create_master_table_command = model_generator(
             table_name=table_name,
             row_data_1=field_types,
             row_data_2=field_names
@@ -291,6 +291,11 @@ class TableCreator(APIView):
         cursor = connection.cursor()
 
         try:
+            cursor.execute(create_master_table_command)
+            # Commit the transaction
+            connection.commit()
+            _message.append("Master Table has been created")
+
             cursor.execute(create_table_command)
             # Commit the transaction
             connection.commit()
