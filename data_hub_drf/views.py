@@ -227,7 +227,6 @@ class TableCreator(APIView):
         "data_types": "{
                         "product": "varchar(50)",
                         "actual_cost_2": "int",
-                        "batch_id": "int",
                         "loss": "int",
                         "market_cost_2":
                         "int"
@@ -264,6 +263,8 @@ class TableCreator(APIView):
             _error.append("'table_name' can only start with lowercase or underscores and it can only consist of underscores, lowercase or numbers.")
         if "delete" in data_types:
             _error.append("Can not create a field with name 'delete'.")
+        if "batch_id" in data_types:
+            _error.append("Can not create a field with name 'batch_id'.")
         if len(_error) > 0:
             error = error_message(error=_error)
             return Response(error, status=status.HTTP_400_BAD_REQUEST)

@@ -24,7 +24,7 @@ def model_generator(table_name=None, row_data_1=None, row_data_2=None):
 
     # generating a command to create a table in db.
     create_table_command = create_table_name + "(" + '"id" SERIAL PRIMARY KEY, ' + create_columns + ', "batch_id" int NOT NULL, ' + 'FOREIGN KEY (batch_id) REFERENCES ' + master_table_name + '(id) ON DELETE CASCADE' + ");"
-    create_meta_table_command = create_table_name_meta + "(" + '"id" SERIAL PRIMARY KEY, ' + create_columns_meta + ");"
+    create_meta_table_command = create_table_name_meta + "(" + '"id" SERIAL PRIMARY KEY, ' + create_columns_meta + ', "batch_id" BOOLEAN' + ");"
     create_master_table_command = create_table_name_master + "(" + '"id" SERIAL PRIMARY KEY, ' + '"batch_id" varchar(50));'
 
     return create_table_command, create_meta_table_command, create_master_table_command
