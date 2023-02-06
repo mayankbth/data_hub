@@ -30,18 +30,48 @@ def model_generator(table_name=None, row_data_1=None, row_data_2=None):
     return create_table_command, create_meta_table_command, create_master_table_command
 
 def data_populator(table_name=None, row_data_1=None, row_data_2=None, row_data_3=None):
-    """This will generate the command to populate the table"""
+    """This will generate the command to populate the table and populate batch master table"""
+
+    # saving the batch_id in "master.batch_table_name" and getting the pk of batch_id
+    from django.db import connection
+    import datetime
+    current_timestamp = datetime.datetime.now()
+    batch_id = str(current_timestamp)
+    master_batch_table_name = "batch_" + table_name
+    insert_into_command = "INSERT INTO " + SCHEMA_MASTER + '.' + master_batch_table_name + " "
+    insert_into_batch_master = insert_into_command + "(batch_id) VALUES (" + "'" + batch_id + "'" + ");"
+    cursor = connection.cursor()
+    cursor.execute(insert_into_batch_master)
+    # pk_value_batch_id_command = "SELECT batch_id FROM " + SCHEMA_MASTER + '.constraint_column_usage WHERE table_name = ' + "'" + master_batch_table_name + "'" + "AND constraint_name = " + "'" + master_batch_table_name + "_pkey" + "'"
+    pk_value_batch_id_command = "SELECT id FROM " + SCHEMA_MASTER + "." + master_batch_table_name + " WHERE batch_id = " + "'" + batch_id + "'" + ";"
+    cursor.execute(pk_value_batch_id_command)
+    pk_value_batch_id = cursor.fetchone()
+    cursor.close()
 
     insert_into_command = "INSERT INTO " + SCHEMA_DATA_HUB + '.' + table_name + " "
-    columns = ''
-    _create_columns_dictionary = dict(zip(tuple(row_data_2), tuple(row_data_1)))
 
-    for _ in _create_columns_dictionary.keys():
-        columns += _ + ", "
-    columns = columns[0:-2]
+    columns = ''
+
+    if len(row_data_1) > 0:
+        # when UPLOAD_EXCEL_METHOD_1 == True
+        _create_columns_dictionary = dict(zip(tuple(row_data_2), tuple(row_data_1)))
+
+        for _ in _create_columns_dictionary.keys():
+            columns += _ + ", "
+        columns = columns[0:-2]
+
+    else:
+        # when UPLOAD_EXCEL_METHOD_1 == False
+        for _ in row_data_2:
+            columns += _ + ", "
+        columns = columns[0:-2]
+
     all_rows = ''
     for _ in row_data_3:
         rows = ''
+        # appending "pk_value_batch_id" into every list to get added in "batch_id" field and "False" to get added in "soft_delete"
+        _.append("False")
+        _.append(pk_value_batch_id[0])
         for i in _:
             if i != 'None':
                 try:
@@ -54,6 +84,9 @@ def data_populator(table_name=None, row_data_1=None, row_data_2=None, row_data_3
         rows = rows[0:-2]
         all_rows += '(' + rows + ')' + ', '
     all_rows = all_rows[0:-2]
+
+    # adding the soft_delete and batch_id field in columns
+    columns = columns + ", soft_delete, batch_id"
 
     insert_into_table_command = insert_into_command + '(' + columns + ') ' + 'VALUES ' + all_rows + ';'
 

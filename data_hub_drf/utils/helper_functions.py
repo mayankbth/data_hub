@@ -68,31 +68,31 @@ def data_extractor(worksheet=None, data_types=None):
         for cell in row:
             row_data_2.append(str(cell.value))
 
-    if data_types == None:
-        # to get the field types
-        for row in worksheet.iter_rows(min_row=2, max_row=2):
-            for cell in row:
-                row_data_1.append(str(cell.value))
-    else:
-        # data_types = json.loads(data_types)
-        try:
-            data_types = json.loads(data_types)
-        except json.decoder.JSONDecodeError as e:
-            _error = f"An error occurred: {e}"
-            return _error
-
-        error_fields = []
-        # to get the field types
-        # creating the data_type list (row_data_1) in ordered way w.r.t. to the field name list (row_data_2)
-        for i in row_data_2:
-            try:
-                row_data_1.append(data_types[i])
-            except:
-                error_fields.append(i)
-                _error = f"Data type of fields {error_fields} are not defined"
-        # to check if _error is declared or not (exists or not)
-        if "_error" in locals():
-            return _error
+    # if data_types == None:
+    #     # to get the field types
+    #     for row in worksheet.iter_rows(min_row=2, max_row=2):
+    #         for cell in row:
+    #             row_data_1.append(str(cell.value))
+    # else:
+    #     # data_types = json.loads(data_types)
+    #     try:
+    #         data_types = json.loads(data_types)
+    #     except json.decoder.JSONDecodeError as e:
+    #         _error = f"An error occurred: {e}"
+    #         return _error
+    #
+    #     error_fields = []
+    #     # to get the field types
+    #     # creating the data_type list (row_data_1) in ordered way w.r.t. to the field name list (row_data_2)
+    #     for i in row_data_2:
+    #         try:
+    #             row_data_1.append(data_types[i])
+    #         except:
+    #             error_fields.append(i)
+    #             _error = f"Data type of fields {error_fields} are not defined"
+    #     # to check if _error is declared or not (exists or not)
+    #     if "_error" in locals():
+    #         return _error
 
         # importing state_handlers to perform appropriate action for populating data into created table
         from data_hub_drf.utils.state_handlers import (
@@ -104,14 +104,40 @@ def data_extractor(worksheet=None, data_types=None):
 
         if UPLOAD_EXCEL_METHOD_1:
             min_row = UPLOAD_EXCEL_METHOD_1_DATA_START_ROW_3
+
+            # to get the data types
+            if data_types == None:
+                for row in worksheet.iter_rows(min_row=2, max_row=2):
+                    for cell in row:
+                        row_data_1.append(str(cell.value))
+            else:
+                # data_types = json.loads(data_types)
+                try:
+                    data_types = json.loads(data_types)
+                except json.decoder.JSONDecodeError as e:
+                    _error = f"An error occurred: {e}"
+                    return _error
+
+                error_fields = []
+                # to get the field types
+                # creating the data_type list (row_data_1) in ordered way w.r.t. to the field name list (row_data_2)
+                for i in row_data_2:
+                    try:
+                        row_data_1.append(data_types[i])
+                    except:
+                        error_fields.append(i)
+                        _error = f"Data type of fields {error_fields} are not defined"
+                # to check if _error is declared or not (exists or not)
+                if "_error" in locals():
+                    return _error
         else:
             min_row = UPLOAD_EXCEL_METHOD_2_DATA_START_ROW_2
 
-        for row in worksheet.iter_rows(min_row=min_row):
-            row_data = []
-            for cell in row:
-                row_data.append(str(cell.value))
-            row_data_3.append(row_data)
+            for row in worksheet.iter_rows(min_row=min_row):
+                row_data = []
+                for cell in row:
+                    row_data.append(str(cell.value))
+                row_data_3.append(row_data)
 
     return row_data_1, row_data_2, row_data_3
 

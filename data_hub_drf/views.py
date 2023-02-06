@@ -97,6 +97,8 @@ class UploadExcel(APIView):
         try:
             # if form.is_valid() = True
             worksheet, table_name = table_name_worksheet_verifier(request=request)
+            if 'table_name' in request.POST:
+                table_name = request.POST['table_name']
             # to check what user wants, create schema, populate data or both.
             if request.POST['data'] == 'True' or request.POST['data'] == 'False':
                 if request.POST['data'] == 'True':
@@ -127,16 +129,25 @@ class UploadExcel(APIView):
         # row_data_1 = [], row_data_2 = [], row_data_3 = []
         # checking if "data_types" are provided explicitly in the form or in the excel.
         if 'data_types' in request.POST:
+            # method 1
+            row_data_1, row_data_2, row_data_3 = data_extractor(worksheet=worksheet, data_types=request.POST['data_types'])
+            # # method 2
+            # try:
+            #     row_data_1, row_data_2, row_data_3 = data_extractor(worksheet=worksheet, data_types=request.POST['data_types'])
+            # except:
+            #     _error = data_extractor(worksheet=worksheet, data_types=request.POST['data_types'])
+            #     error = error_message(error=_error)
+            #     return Response(error, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            # # method 1
+            # row_data_1, row_data_2, row_data_3 = data_extractor(worksheet=worksheet)
             # method 2
             try:
-                row_data_1, row_data_2, row_data_3 = data_extractor(worksheet=worksheet, data_types=request.POST['data_types'])
+                row_data_1, row_data_2, row_data_3 = data_extractor(worksheet=worksheet)
             except:
                 _error = data_extractor(worksheet=worksheet, data_types=request.POST['data_types'])
                 error = error_message(error=_error)
                 return Response(error, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            # method 1
-            row_data_1, row_data_2, row_data_3 = data_extractor(worksheet=worksheet)
 
         # In Python, the connection.cursor() method is used to create a cursor object from a database connection object.
         # The cursor object is used to execute SQL statements and manipulate the results of the statements.
@@ -164,7 +175,7 @@ class UploadExcel(APIView):
                 _message.append("Meta Table has been created.")
 
             if data:
-                # getting an sql command to populate table
+                # getting an sql command to populate table and it will also populate the batch master table
                 insert_into_table_command = data_populator(
                     table_name=table_name,
                     row_data_1=row_data_1,
